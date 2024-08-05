@@ -9,10 +9,9 @@ This Django application is designed to provide personalized health advice to use
 - **Steps Less Week Condition API**: Identifies users who have walked 50% less this week compared to the previous week and provides personalized advice.
 
 ## Setup Instructions
-
 ### Prerequisites
-- Python 3.x
-- Django 5.0.x
+- Python 3.11.5 or higher
+- Django 5.0.7 or higher
 - SQLite (default for Django projects)
 - OpenAI API Key
 
@@ -20,33 +19,27 @@ This Django application is designed to provide personalized health advice to use
 
 1. Clone the repository:
     ```sh
-    git clone <repository-url>
-    cd health_advice
+    git clone https://github.com/TesfayeAdugna/Health-Advice.git
+    cd Health_Advice
     ```
 
-2. Create a virtual environment and activate it:
-    ```sh
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
-
-3. Install the required dependencies:
+2. Install the required dependencies:
     ```sh
     pip install -r requirements.txt
     ```
 
-4. Set up the database:
+3. Set up the database:
     ```sh
     python manage.py makemigrations
     python manage.py migrate
     ```
 
-5. Generate random data:
+4. Generate random data:
     ```sh
     python manage.py populate_apple_health_stat
     ```
 
-6. Run the development server:
+5. Run the development server:
     ```sh
     python manage.py runserver
     ```
@@ -56,7 +49,6 @@ Create a `.env` file in the root directory and add your OpenAI API Key:
 ```makefile
 OPENAI_API_KEY=your_openai_api_key 
 ```
-
 
 # Project Structure
 
@@ -90,9 +82,7 @@ health_advice/
 
 
 # Models
-
 ## AppleHealthStat
-
 ### Model to store Apple Health statistics for users.
 ```python
 from django.db import models
@@ -123,9 +113,7 @@ class AppleHealthStat(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 ```
 # Management Command
-
 ## generate_random_data.py
-
 ### Command to generate random Apple Health data for users.
 ```python
 import random
@@ -171,9 +159,7 @@ class Command(BaseCommand):
 ```
 
 # Queries
-
 ## queries.py
-
 ### Contains functions to fetch users based on specific conditions.
 ```python
 from django.utils import timezone
@@ -218,9 +204,7 @@ def get_users_with_50_percent_less_steps():
     return users
 ```
 # Utilities
-
 ## utils.py
-
 ### Utility functions including AI response generation.
 ```python
 import openai
@@ -271,9 +255,7 @@ class StepsLessWeekConditionAPI(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 ```
 # Serializers
-
 ## serializers.py
-
 ### Serializer for user data.
 ```python
 from rest_framework import serializers
@@ -293,9 +275,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'apple_health_stat']
 ```
 # URL Configuration
-
 ## urls.py
-
 ### URL routing for the application.
 ```python
 from django.contrib import admin
