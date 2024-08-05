@@ -51,7 +51,7 @@ OPENAI_API_KEY=your_openai_api_key
 ```
 
 # Project Structure
-
+```
 health_advice/
 ├── health_advice/
 │   ├── __init__.py
@@ -79,6 +79,7 @@ health_advice/
 ├── db.sqlite3
 ├── manage.py
 └── .env
+```
 
 
 # Models
