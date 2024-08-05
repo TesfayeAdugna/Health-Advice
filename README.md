@@ -36,7 +36,7 @@ This Django application is designed to provide personalized health advice to use
 
 4. Generate random data:
     ```sh
-    python manage.py populate_apple_health_stat
+    python manage.py generate_random_data
     ```
 
 5. Run the development server:
@@ -76,9 +76,8 @@ health_advice/
 │   ├── urls.py
 │   ├── utils.py
 │   └── views.py
-├── db.sqlite3
-├── manage.py
-└── .env
+├── .env
+└── manage.py
 ```
 
 
@@ -275,18 +274,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ['id', 'username', 'email', 'apple_health_stat']
 ```
-# URL Configuration
-## urls.py
-### URL routing for the application.
+### URL Configuration
+#### health_app/urls.py
+URL routing for the application.
 ```python
-from django.contrib import admin
-from django.urls import path, include
-from health_app.views import SleepConditionAPI, StepsTodayConditionAPI, StepsLessWeekConditionAPI
+from django.urls import path
+from .views import SleepConditionAPIView, Steps1ConditionAPIView, Steps2ConditionAPIView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/sleep-condition/', SleepConditionAPI.as_view(), name='sleep-condition'),
-    path('api/steps-today-condition/', StepsTodayConditionAPI.as_view(), name='steps-today-condition'),
-    path('api/steps-less-week-condition/', StepsLessWeekConditionAPI.as_view(), name='steps-less-week-condition'),
+    path('sleep-condition/', SleepConditionAPIView.as_view(), name='sleep-condition'),
+    path('steps1-condition/', Steps1ConditionAPIView.as_view(), name='steps1-condition'),
+    path('steps2-condition/', Steps2ConditionAPIView.as_view(), name='steps2-condition'),
 ]
 ```

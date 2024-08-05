@@ -36,5 +36,6 @@ class Command(BaseCommand):
                     sleepAnalysis=[{"date": (datetime.now() - timedelta(days=i)).isoformat(), "sleep_time": random.uniform(0, 8) * 3600} for i in range(7)],
                 )
                 stat.save()
-
+        users = User.objects.all()
+        self.stdout.write(self.style.SUCCESS(f'Found {users.count()} users.'))
         self.stdout.write(self.style.SUCCESS('Successfully generated random data'))
