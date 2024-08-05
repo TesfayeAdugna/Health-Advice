@@ -94,7 +94,7 @@ health_advice/
 ## AppleHealthStat
 
 ### Model to store Apple Health statistics for users.
-```
+```python
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -127,7 +127,7 @@ class AppleHealthStat(models.Model):
 ## generate_random_data.py
 
 ### Command to generate random Apple Health data for users.
-```
+```python
 import random
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
@@ -175,7 +175,7 @@ class Command(BaseCommand):
 ## queries.py
 
 ### Contains functions to fetch users based on specific conditions.
-```
+```python
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Sum, Q, F
@@ -222,7 +222,7 @@ def get_users_with_50_percent_less_steps():
 ## utils.py
 
 ### Utility functions including AI response generation.
-```
+```python
 import openai
 from django.conf import settings
 
@@ -275,7 +275,7 @@ class StepsLessWeekConditionAPI(APIView):
 ## serializers.py
 
 ### Serializer for user data.
-```
+```python
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import AppleHealthStat
@@ -297,7 +297,7 @@ class UserSerializer(serializers.ModelSerializer):
 ## urls.py
 
 ### URL routing for the application.
-```
+```python
 from django.contrib import admin
 from django.urls import path, include
 from health_app.views import SleepConditionAPI, StepsTodayConditionAPI, StepsLessWeekConditionAPI
