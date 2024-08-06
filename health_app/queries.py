@@ -28,8 +28,9 @@ def get_users_with_10000_steps_today():
     today = timezone.now().date()
     users = get_user_model().objects.filter(
         apple_health_stat__created_at__date=today,
-        apple_health_stat__stepCount__gte =10000
-    )
+        apple_health_stat__stepCount__gte = 10000
+    ).distinct()
+
     return users
 
 def get_users_with_50_percent_less_steps():
@@ -46,7 +47,10 @@ def get_users_with_50_percent_less_steps():
             'apple_health_stat__stepCount',
             filter=Q(apple_health_stat__created_at__date__gte=two_weeks_ago) & Q(apple_health_stat__created_at__date__lt=one_week_ago)
         )
-    ).filter(
+    )
+    
+    filtered_users = users.filter(
         steps_last_week__lt=F('steps_week_before_last') / 2
     )
-    return users
+
+    return filtered_users

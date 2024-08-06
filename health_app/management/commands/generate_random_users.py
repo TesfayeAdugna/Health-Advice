@@ -8,9 +8,9 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         User = get_user_model()
 
-        num_users = 10 # This number to create more or fewer users
-        for _ in range(num_users):  
-            username = f'user{random.randint(1, 1000)}'
+        num_users = 100 # This number to create more or fewer users
+        for i in range(num_users):  
+            username = f'user{i}'
             email = f'{username}@example.com'
             password = 'password123'  # password for testing
 

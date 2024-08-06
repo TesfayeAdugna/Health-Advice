@@ -23,5 +23,5 @@ class AppleHealthStat(models.Model):
     oxygenSaturation = models.PositiveSmallIntegerField(null=True, blank=True)
     mindfulSession = models.JSONField(null=True, blank=True)
     sleepAnalysis = models.JSONField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
