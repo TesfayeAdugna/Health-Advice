@@ -9,10 +9,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         User = get_user_model()
-        users = User.objects.all()
+        users = User.objects.all()[:2]
 
         for user in users:
-            for _ in range(30):  # Generate data for the last 30 days
+            for _ in range(7):  # Generate data for the last 7 days
                 stat = AppleHealthStat(
                     user=user,
                     dateOfBirth=datetime(1980, 1, 1) + timedelta(days=random.randint(0, 365 * 40)),
@@ -36,6 +36,13 @@ class Command(BaseCommand):
                     sleepAnalysis=[{"date": (datetime.now() - timedelta(days=i)).isoformat(), "sleep_time": random.uniform(0, 8) * 3600} for i in range(7)],
                 )
                 stat.save()
-        users = User.objects.all()
-        self.stdout.write(self.style.SUCCESS(f'Found {users.count()} users.'))
+
+        self.stdout.write(self.style.SUCCESS(
+            f"hello 1 {user.username}"
+            f"hello 2 {stat.dateOfBirth}"
+        ))
+                
+        users = User.objects.all()[:2]
+        # print(users, "here")
+        self.stdout.write(self.style.SUCCESS(f'Found {users} users.'))
         self.stdout.write(self.style.SUCCESS('Successfully generated random data'))
