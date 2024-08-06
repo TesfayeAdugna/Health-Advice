@@ -5,27 +5,14 @@ from django.contrib.auth import get_user_model
 
 from health_app.models import AppleHealthStat
 
-# def get_users_with_less_sleep():
-#     one_week_ago = timezone.now() - timedelta(days=7)
-#     print(get_user_model().objects.all())
-#     users = get_user_model().objects.filter(
-#         apple_health_stat__created_at__gte=one_week_ago
-#     ).annotate(
-#         total_sleep=Sum('apple_health_stat__sleepAnalysis__sleep_time')
-#     ).filter(total_sleep__lt=6*3600)  # 6 hours in seconds
-#     print(users, "hello here")
-#     return users
-
 def get_users_with_less_sleep():
     one_week_ago = timezone.now() - timedelta(days=7)
-    users = get_user_model().objects.all()[:1]
+    users = get_user_model().objects.all()
     users_with_less_sleep = []
-    print(users, one_week_ago)
     
-               
     for user in users:
         total_sleep = 0
-        health_stats = AppleHealthStat.objects.filter(user=user, created_at__gte=one_week_ago)[:1]
+        health_stats = AppleHealthStat.objects.filter(user=user, created_at__gte=one_week_ago)
         count = 0
         for stat in health_stats:
             sleep_analyses = stat.sleepAnalysis  # Assuming sleepAnalysis is a list of dictionaries

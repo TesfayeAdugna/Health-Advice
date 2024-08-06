@@ -37,12 +37,4 @@ class Command(BaseCommand):
                 )
                 stat.save()
 
-        self.stdout.write(self.style.SUCCESS(
-            f"hello 1 {user.username}"
-            f"hello 2 {stat.dateOfBirth}"
-        ))
-                
-        users = User.objects.all()[:2]
-        # print(users, "here")
-        self.stdout.write(self.style.SUCCESS(f'Found {users} users.'))
         self.stdout.write(self.style.SUCCESS('Successfully generated random data'))

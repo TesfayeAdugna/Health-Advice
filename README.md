@@ -36,6 +36,7 @@ This Django application is designed to provide personalized health advice to use
 
 4. Generate random data:
     ```sh
+    python manage.py generate_random_users
     python manage.py generate_random_data
     ```
 
@@ -88,8 +89,9 @@ health_advice/
 from django.db import models
 from django.contrib.auth import get_user_model
 
+User = get_user_model()
 class AppleHealthStat(models.Model):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='apple_health_stat')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='apple_health_stat')
     dateOfBirth = models.DateTimeField(null=True, blank=True)
     height = models.PositiveSmallIntegerField(null=True, blank=True)
     bodyMass = models.PositiveSmallIntegerField(null=True, blank=True)
