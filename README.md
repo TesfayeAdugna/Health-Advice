@@ -111,7 +111,7 @@ class AppleHealthStat(models.Model):
     oxygenSaturation = models.PositiveSmallIntegerField(null=True, blank=True)
     mindfulSession = models.JSONField(null=True, blank=True)
     sleepAnalysis = models.JSONField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField()
     updated_at = models.DateTimeField(auto_now=True)
 ```
 # Management Command
@@ -123,6 +123,8 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from health_app.models import AppleHealthStat
 from datetime import datetime, timedelta
+from django.utils import timezone
+
 
 class Command(BaseCommand):
     help = 'Generate random data for AppleHealthStat'
@@ -130,18 +132,20 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         User = get_user_model()
         users = User.objects.all()
+        today = timezone.now().date()
 
         for user in users:
-            for _ in range(30):  # Generate data for the last 30 days
+            for i in range(14):  # Generate data for the last 7 days
                 stat = AppleHealthStat(
                     user=user,
+                    created_at=today - timedelta(days=i),
                     dateOfBirth=datetime(1980, 1, 1) + timedelta(days=random.randint(0, 365 * 40)),
                     height=random.randint(150, 200),
                     bodyMass=random.randint(50, 100),
                     bodyFatPercentage=random.randint(10, 30),
                     biologicalSex=random.choice(['male', 'female']),
                     activityMoveMode=random.choice(['activeEnergy', 'sedentary']),
-                    stepCount=random.randint(0, 20000),
+                    stepCount=random.uniform(0, 20000),
                     basalEnergyBurned=random.randint(1000, 3000),
                     activeEnergyBurned=random.randint(100, 1000),
                     flightsClimbed=random.randint(0, 20),
@@ -153,7 +157,7 @@ class Command(BaseCommand):
                     heartRate=random.randint(60, 100),
                     oxygenSaturation=random.randint(95, 100),
                     mindfulSession={"sessions": [random.randint(0, 60) for _ in range(7)]},
-                    sleepAnalysis=[{"date": (datetime.now() - timedelta(days=i)).isoformat(), "sleep_time": random.uniform(0, 8) * 3600} for i in range(7)],
+                    sleepAnalysis=[{"date": (datetime.now() - timedelta(days=i)).isoformat(), "sleep_time": random.uniform(0, 1) * 3600} for i in range(12)],
                 )
                 stat.save()
 
@@ -169,21 +173,34 @@ from datetime import timedelta
 from django.db.models import Sum, Q, F
 from django.contrib.auth import get_user_model
 
+from health_app.models import AppleHealthStat
+
 def get_users_with_less_sleep():
     one_week_ago = timezone.now() - timedelta(days=7)
-    users = get_user_model().objects.filter(
-        apple_health_stat__created_at__gte=one_week_ago
-    ).annotate(
-        total_sleep=Sum('apple_health_stat__sleepAnalysis__sleep_time')
-    ).filter(total_sleep__lt=6*3600)  # 6 hours in seconds
-    return users
+    users = get_user_model().objects.all()
+    users_with_less_sleep = []
+    
+    for user in users:
+        total_sleep = 0
+        health_stats = AppleHealthStat.objects.filter(user=user, created_at__gte=one_week_ago)
+        count = 0
+        for stat in health_stats:
+            sleep_analyses = stat.sleepAnalysis  # Assuming sleepAnalysis is a list of dictionaries
+            total_sleep += sum(sleep['sleep_time'] for sleep in sleep_analyses)
+            count += 1
+
+        if total_sleep/7 < 6 * 3600:  # 6 hours in seconds
+            users_with_less_sleep.append(user)
+
+    return users_with_less_sleep
 
 def get_users_with_10000_steps_today():
     today = timezone.now().date()
     users = get_user_model().objects.filter(
         apple_health_stat__created_at__date=today,
-        apple_health_stat__stepCount__gte=10000
-    )
+        apple_health_stat__stepCount__gte = 10000
+    ).distinct()
+
     return users
 
 def get_users_with_50_percent_less_steps():
@@ -200,29 +217,51 @@ def get_users_with_50_percent_less_steps():
             'apple_health_stat__stepCount',
             filter=Q(apple_health_stat__created_at__date__gte=two_weeks_ago) & Q(apple_health_stat__created_at__date__lt=one_week_ago)
         )
-    ).filter(
+    )
+    
+    filtered_users = users.filter(
         steps_last_week__lt=F('steps_week_before_last') / 2
     )
-    return users
+
+    return filtered_users
 ```
 # Utilities
 ## utils.py
 ### Utility functions including AI response generation.
 ```python
 import openai
-from django.conf import settings
+import os
 
-openai.api_key = settings.OPENAI_API_KEY
+openai.api_key = os.getenv('OPENAI_API_KEY')
+print(f"API Key: {openai.api_key}")
+def generate_ai_response(user, data, topic):
+    print(data, "data send to the ai")
+    try:
 
-def generate_ai_response(user, data):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a health advisor."},
-            {"role": "user", "content": f"Hello, {user.username}. Here is your health data: {data}. Can you provide some personalized advice and analysis?"}
-        ]
-    )
-    return response.choices[0].message['content']
+        prompt = f"""
+        you are a health assistant providing personalized feedback. Based on the following data, generate a friendly and motivational message for the user.
+
+        
+        User: {user.username}
+        Data: {data}
+        topic: {topic}
+
+
+        Example Response format:
+        "Hello, [name]. I see that you walked [stepCount] steps today, which is 4,000 more than yesterday. It's great that you are so active! I noticed that on days when you walk a lot, you sleep 20% better. Keep it up and continue in the same spirit to reach your goal."
+        """
+        response = openai.ChatCompletion.create(
+
+            model="gpt-3.5-turbo-0125",
+            messages=[
+                {"role": "system", "content": "You are a health advisor."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message['content'].strip()
+    except Exception as e:
+        return f"AI generation faild: {str(e)}"
+
 ```
 ## Views
 ### views.py
@@ -231,50 +270,47 @@ API views for handling health conditions.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from health_app.models import AppleHealthStat
 from .queries import get_users_with_less_sleep, get_users_with_10000_steps_today, get_users_with_50_percent_less_steps
 from .utils import generate_ai_response
-from .serializers import UserSerializer
-
-class SleepConditionAPI(APIView):
-    def get(self, request, *args, **kwargs):
-        users = get_users_with_less_sleep()
-        data = [UserSerializer(user).data for user in users]
-        response_data = [{"user": user_data, "advice": generate_ai_response(user_data, "sleep")} for user_data in data]
-        return Response(response_data, status=status.HTTP_200_OK)
-
-class StepsTodayConditionAPI(APIView):
-    def get(self, request, *args, **kwargs):
-        users = get_users_with_10000_steps_today()
-        data = [UserSerializer(user).data for user in users]
-        response_data = [{"user": user_data, "advice": generate_ai_response(user_data, "steps_today")} for user_data in data]
-        return Response(response_data, status=status.HTTP_200_OK)
-
-class StepsLessWeekConditionAPI(APIView):
-    def get(self, request, *args, **kwargs):
-        users = get_users_with_50_percent_less_steps()
-        data = [UserSerializer(user).data for user in users]
-        response_data = [{"user": user_data, "advice": generate_ai_response(user_data, "steps_less_week")} for user_data in data]
-        return Response(response_data, status=status.HTTP_200_OK)
-```
-# Serializers
-## serializers.py
-### Serializer for user data.
-```python
-from rest_framework import serializers
+from django.core.serializers import serialize
+import json
 from django.contrib.auth import get_user_model
-from .models import AppleHealthStat
 
-class AppleHealthStatSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AppleHealthStat
-        fields = '__all__'
 
-class UserSerializer(serializers.ModelSerializer):
-    apple_health_stat = AppleHealthStatSerializer(many=True, read_only=True)
+class SleepConditionAPIView(APIView):
+    def get(self, request):
+        users = get_users_with_less_sleep()
+        responses = []
+        for user in users:
+            datas = AppleHealthStat.objects.filter(user=user)
+            
+            json_data = serialize('json', datas)
 
-    class Meta:
-        model = get_user_model()
-        fields = ['id', 'username', 'email', 'apple_health_stat']
+            ai_response = generate_ai_response(user, json_data, "Users with a week of sleep less than 6 hours.")
+            responses.append({"user": user.username, "ai_response": ai_response})
+        
+        return Response(responses, status=status.HTTP_200_OK)
+
+class Steps1ConditionAPIView(APIView):
+    def get(self, request):
+        users = get_users_with_10000_steps_today()
+        responses = []
+        for user in users:
+            data = AppleHealthStat.objects.filter(user=user)
+            ai_response = generate_ai_response(user, data, "Users who have reached 10,000 steps today.")
+            responses.append({"user": user.username, "ai_response": ai_response})
+        return Response(responses, status=status.HTTP_200_OK)
+
+class Steps2ConditionAPIView(APIView):
+    def get(self, request):
+        users = get_users_with_50_percent_less_steps()
+        responses = []
+        for user in users:
+            data = user.apple_health_stat.all()
+            ai_response = generate_ai_response(user, data, "Users who walked 50%\ less this week compared to the previous week.")
+            responses.append({"user": user.username, "ai_response": ai_response})
+        return Response(responses, status=status.HTTP_200_OK)
 ```
 ### URL Configuration
 #### health_app/urls.py
