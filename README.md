@@ -233,7 +233,6 @@ import openai
 import os
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
-print(f"API Key: {openai.api_key}")
 def generate_ai_response(user, data, topic):
     print(data, "data send to the ai")
     try:
@@ -323,5 +322,6 @@ urlpatterns = [
     path('sleep-condition/', SleepConditionAPIView.as_view(), name='sleep-condition'),
     path('steps1-condition/', Steps1ConditionAPIView.as_view(), name='steps1-condition'),
     path('steps2-condition/', Steps2ConditionAPIView.as_view(), name='steps2-condition'),
+    path('absent-users/', AbsentUsersAPIView.as_view(), name='absent-users'),
 ]
 ```

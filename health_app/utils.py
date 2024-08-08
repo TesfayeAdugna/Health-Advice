@@ -4,9 +4,8 @@ import openai
 import os
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
-print(f"API Key: {openai.api_key}")
+# print(f"API Key: {openai.api_key}")
 def generate_ai_response(user, data, topic):
-    print(data, "data send to the ai")
     try:
 
         prompt = f"""

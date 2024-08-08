@@ -54,3 +54,20 @@ def get_users_with_50_percent_less_steps():
     )
 
     return filtered_users
+
+def get_absent_users():
+    User = get_user_model()
+    users_absent_days = {}
+    
+    for user in User.objects.all():
+        last_stat = AppleHealthStat.objects.filter(user=user).order_by('-created_at').first()
+        
+        if last_stat:
+            days_absent = (timezone.now().date() - last_stat.created_at.date()).days
+            if days_absent > 0:
+                users_absent_days[user.username] = days_absent
+        else:
+            days_absent = (timezone.now().date() - user.date_joined.date()).days
+            users_absent_days[user.username] = days_absent
+
+    return users_absent_days

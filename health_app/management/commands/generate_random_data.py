@@ -1,3 +1,4 @@
+from collections import defaultdict
 import random
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
@@ -15,7 +16,17 @@ class Command(BaseCommand):
         today = timezone.now().date()
 
         for user in users:
-            for i in range(14):  # Generate data for the last 7 days
+            # did he stop?
+            num = random.randint(0, 10)
+            stopped = False
+            if num < 5: # stopped after some days.
+                stopped = True
+            stop_day = 0
+            if stopped: # when did he stop?
+                stop_day = random.randint(1, 360)
+
+            for i in range(360, -1, -1):  # Generate data for the last 360 days
+                if i < stop_day: continue
                 stat = AppleHealthStat(
                     user=user,
                     created_at=today - timedelta(days=i),
@@ -37,7 +48,8 @@ class Command(BaseCommand):
                     heartRate=random.randint(60, 100),
                     oxygenSaturation=random.randint(95, 100),
                     mindfulSession={"sessions": [random.randint(0, 60) for _ in range(7)]},
-                    sleepAnalysis=[{"date": (datetime.now() - timedelta(days=i)).isoformat(), "sleep_time": random.uniform(0, 1) * 3600} for i in range(12)],
+                    sleepAnalysis=[{"date": (today - timedelta(days=i)).isoformat(), "sleep_time": random.uniform(0, 24) * 3600}]
+                    # sleepAnalysis=[{"date": (datetime.now() - timedelta(days=i)).isoformat(), "sleep_time": random.uniform(0, 1) * 3600} for i in range(12)],
                 )
                 stat.save()
 
